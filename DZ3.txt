@@ -1,0 +1,132 @@
+1.
+
+MATCH (klub:Klub {naziv_klub:'OK Sisak'})
+CREATE (igrac:Igrac {ime_igrac:'Bruno', prezime_igrac:'Silaj', m_z:'m'})-[:IGRA_ZA {godina: 2024}]->(klub)
+
+2.
+
+MATCH (statistika:Statistika)-[:ZA_KLUB {godina:2020}]->(klub:Klub {m_z: 'm'})
+RETURN klub.naziv_klub, SUM(statistika.bodovi) AS ukupni_bodovi
+ORDER BY ukupni_bodovi ASC
+LIMIT 5 
+
+╒═════════════════╤═══════════════╕
+│"klub.naziv_klub"│"ukupni_bodovi"│
+╞═════════════════╪═══════════════╡
+│"OK Sisak"       │653            │
+├─────────────────┼───────────────┤
+│"MOK Rijeka"     │808            │
+├─────────────────┼───────────────┤
+│"OK Zadar"       │810            │
+├─────────────────┼───────────────┤
+│"MOK Marsonia"   │857            │
+├─────────────────┼───────────────┤
+│"OK Rovinj"      │867            │
+└─────────────────┴───────────────┘
+
+3.
+
+MATCH (statistika:Statistika {godina: 2019})-[:ZA_IGRACA]->(igrac:Igrac {m_z:'z'})
+RETURN igrac.ime_igrac, igrac.prezime_igrac, statistika.asevi
+ORDER BY statistika.asevi DESC
+LIMIT 10
+
+╒═════════════════╤═════════════════════╤══════════════════╕
+│"igrac.ime_igrac"│"igrac.prezime_igrac"│"statistika.asevi"│
+╞═════════════════╪═════════════════════╪══════════════════╡
+│"Marta"          │"Cvitković"          │45                │
+├─────────────────┼─────────────────────┼──────────────────┤
+│"Jelena"         │"Zdilar"             │42                │
+├─────────────────┼─────────────────────┼──────────────────┤
+│"Marta"          │"Lukić"              │42                │
+├─────────────────┼─────────────────────┼──────────────────┤
+│"Marijeta"       │"Majer"              │39                │
+├─────────────────┼─────────────────────┼──────────────────┤
+│"Isidora"        │"Ubavić"             │38                │
+├─────────────────┼─────────────────────┼──────────────────┤
+│"Valentina"      │"Maretić"            │36                │
+├─────────────────┼─────────────────────┼──────────────────┤
+│"Lara"           │"Dežulović"          │32                │
+├─────────────────┼─────────────────────┼──────────────────┤
+│"Stela"          │"Vukasović"          │32                │
+├─────────────────┼─────────────────────┼──────────────────┤
+│"Ema"            │"Kolarić"            │30                │
+├─────────────────┼─────────────────────┼──────────────────┤
+│"Andrea"         │"Koraca"             │28                │
+└─────────────────┴─────────────────────┴──────────────────┘
+
+4.
+
+MATCH (statistikaMirna:Statistika {godina: 2020})-[:ZA_IGRACA]->(mirna:Igrac {ime_igrac: 'Mirna', prezime_igrac: 'Bečić'})
+MATCH (statistikaOstali:Statistika {godina: 2020})-[:ZA_IGRACA]->(igrac:Igrac)
+WHERE statistikaOstali.asevi = statistikaMirna.asevi AND igrac <> mirna
+RETURN igrac.ime_igrac, igrac.prezime_igrac
+ORDER BY igrac.prezime_igrac, igrac.ime_igrac
+
+╒═════════════════╤═════════════════════╕
+│"igrac.ime_igrac"│"igrac.prezime_igrac"│
+╞═════════════════╪═════════════════════╡
+│"Lea"            │"Banko"              │
+├─────────────────┼─────────────────────┤
+│"Sanja"          │"Brocić"             │
+├─────────────────┼─────────────────────┤
+│"Ivo"            │"Ivić"               │
+├─────────────────┼─────────────────────┤
+│"Anamarija"      │"Kezerić"            │
+├─────────────────┼─────────────────────┤
+│"Erika"          │"Momić"              │
+├─────────────────┼─────────────────────┤
+│"Petra"          │"Pavlović"           │
+├─────────────────┼─────────────────────┤
+│"Stipe"          │"Perić"              │
+├─────────────────┼─────────────────────┤
+│"Josip"          │"Vojak"              │
+└─────────────────┴─────────────────────┘
+
+5.
+
+MATCH (statistikaKristijan:Statistika {godina: 2020})-[:ZA_IGRACA]->(:Igrac {ime_igrac: 'Kristijan', prezime_igrac: 'Šućur'})
+MATCH (centrometalIgrac:Igrac)-[:IGRA_ZA {godina: 2020}]->(:Klub {naziv_klub: 'OKM Centrometal'})
+MATCH (statistikaCentrometal:Statistika {godina: 2020})-[:ZA_IGRACA]-(centrometalIgrac)
+WHERE statistikaCentrometal <> statistikaKristijan
+RETURN centrometalIgrac.ime_igrac, centrometalIgrac.prezime_igrac, (statistikaCentrometal.bodovi - statistikaKristijan.bodovi) AS razlika_bodova
+ORDER BY razlika_bodova
+
+╒════════════════════════════╤════════════════════════════════╤════════════════╕
+│"centrometalIgrac.ime_igrac"│"centrometalIgrac.prezime_igrac"│"razlika_bodova"│
+╞════════════════════════════╪════════════════════════════════╪════════════════╡
+│"Vanja"                     │"Marciuš"                       │-157            │
+├────────────────────────────┼────────────────────────────────┼────────────────┤
+│"Rene"                      │"Rihtarec"                      │-157            │
+├────────────────────────────┼────────────────────────────────┼────────────────┤
+│"Marko"                     │"David"                         │-156            │
+├────────────────────────────┼────────────────────────────────┼────────────────┤
+│"Niko"                      │"Vidović"                       │-153            │
+├────────────────────────────┼────────────────────────────────┼────────────────┤
+│"Deni"                      │"Vuk"                           │-151            │
+├────────────────────────────┼────────────────────────────────┼────────────────┤
+│"Ivan"                      │"Novak"                         │-150            │
+├────────────────────────────┼────────────────────────────────┼────────────────┤
+│"Marijan"                   │"Palinkaš"                      │-149            │
+├────────────────────────────┼────────────────────────────────┼────────────────┤
+│"Hrvoje"                    │"Novak"                         │-143            │
+├────────────────────────────┼────────────────────────────────┼────────────────┤
+│"Filip"                     │"Jengić"                        │-135            │
+├────────────────────────────┼────────────────────────────────┼────────────────┤
+│"Ante"                      │"Mišura"                        │-112            │
+├────────────────────────────┼────────────────────────────────┼────────────────┤
+│"Ivan"                      │"Orešković"                     │-81             │
+├────────────────────────────┼────────────────────────────────┼────────────────┤
+│"Matej"                     │"Martinko"                      │-79             │
+├────────────────────────────┼────────────────────────────────┼────────────────┤
+│"Mislav"                    │"Lučić"                         │-70             │
+├────────────────────────────┼────────────────────────────────┼────────────────┤
+│"Hrvoje"                    │"Zelenika"                      │1               │
+├────────────────────────────┼────────────────────────────────┼────────────────┤
+│"Antonio"                   │"Juras"                         │45              │
+├────────────────────────────┼────────────────────────────────┼────────────────┤
+│"Dražen"                    │"Vincek"                        │167             │
+└────────────────────────────┴────────────────────────────────┴────────────────┘
+
+
+
